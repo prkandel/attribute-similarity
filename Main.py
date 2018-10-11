@@ -1,4 +1,5 @@
 from Grouping import Grouping
+from Pair import Pair
 from SimilarityUtil import SimilarityUtil
 
 
@@ -14,21 +15,21 @@ def main():
     person7 = [16, 2, 24]
 
     persons = [person1, person2, person3, person4, person5, person6, person7]
-    pairwise_similarity = get_pairwise_similarity(persons)
-    grouping = Grouping(pairwise_similarity, THRESHOLD)
+    pairwise_similarity_list = get_pairwise_similarity(persons)
+    grouping = Grouping(pairwise_similarity_list, THRESHOLD)
     groups = grouping.get_groups()
 
     print(groups)
 
 
 def get_pairwise_similarity(persons):
-    pairwise_similarity = {}
+    pairwise_similarity_list = []
     for i in range(len(persons) - 1):
-        pairwise_similarity[i + 1] = {}
-        for j in range(i + 1, len(persons)):
+        for j in range(i+1, len(persons)):
             similarity = SimilarityUtil.get_cosine_similarity(persons[i], persons[j])
-            pairwise_similarity[i + 1][j + 1] = similarity
-    return pairwise_similarity
+            pair = Pair(i+1,j+1,similarity)
+            pairwise_similarity_list.append(pair)
+    return pairwise_similarity_list
 
 
 if __name__ == '__main__':
