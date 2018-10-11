@@ -72,3 +72,6 @@ class Grouping:
         for pair in self.pairwise_similarity_list:
             self.ungrouped.add(pair.id1)
             self.ungrouped.add(pair.id2)
+
+    def sort_pairwise_similarity_list(self):
+        self.pairwise_similarity_list.sort(key=lambda x: x.count, reverse=True)
