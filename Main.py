@@ -1,6 +1,7 @@
 from Grouping import Grouping
 from SimilarityUtil import SimilarityUtil
 
+
 def main():
     THRESHOLD = 0.95
 
@@ -14,7 +15,8 @@ def main():
 
     persons = [person1, person2, person3, person4, person5, person6, person7]
     pairwise_similarity = get_pairwise_similarity(persons)
-    groups = Grouping.get_groups(pairwise_similarity,THRESHOLD)
+    grouping = Grouping(pairwise_similarity, THRESHOLD)
+    groups = grouping.get_groups()
 
     print(groups)
 
@@ -22,10 +24,10 @@ def main():
 def get_pairwise_similarity(persons):
     pairwise_similarity = {}
     for i in range(len(persons) - 1):
-        pairwise_similarity[i+1] = {}
+        pairwise_similarity[i + 1] = {}
         for j in range(i + 1, len(persons)):
             similarity = SimilarityUtil.get_cosine_similarity(persons[i], persons[j])
-            pairwise_similarity[i+1][j+1] = similarity
+            pairwise_similarity[i + 1][j + 1] = similarity
     return pairwise_similarity
 
 

@@ -1,90 +1,78 @@
 class Grouping:
-    def __init__(self):
-        pass
+    def __init__(self, pairwise_similarity, threshold):
+        self.pairwise_similarity = pairwise_similarity
+        self.threshold = threshold
+        self.ungrouped = set([])
+        self.groups = []
 
-    @staticmethod
-    def get_groups(pairwise_similarity, threshold):
-        groups = []
-        ungrouped = Grouping.initialize_ungrouped(pairwise_similarity)
-        for i in pairwise_similarity:
-            for j in pairwise_similarity[i]:
-                if pairwise_similarity[i][j] >= threshold:
-                    if i in ungrouped and j in ungrouped:
-                        groups.append([i, j])
-                        ungrouped.remove(i)
-                        ungrouped.remove(j)
-                    elif Grouping.get_group_number(i, groups) is not None and Grouping.get_group_number(j,groups) is not None:
-                        group_number_1 = Grouping.get_group_number(i, groups)
-                        group_number_2 = Grouping.get_group_number(j, groups)
+    def get_groups(self):
+        self.initialize_ungrouped()
+        for i in self.pairwise_similarity:
+            for j in self.pairwise_similarity[i]:
+                if self.pairwise_similarity[i][j] >= self.threshold:
+                    if i in self.ungrouped and j in self.ungrouped:
+                        self.groups.append([i, j])
+                        self.ungrouped.remove(i)
+                        self.ungrouped.remove(j)
+                    elif self.get_group_number(i) is not None and self.get_group_number(j) is not None:
+                        group_number_1 = self.get_group_number(i)
+                        group_number_2 = self.get_group_number(j)
                         if group_number_1 != group_number_2:
-                            if Grouping.check_pairwise_similarity_for_groups(groups, group_number_1, group_number_2, pairwise_similarity, threshold):
-                                groups = Grouping.merge_groups(groups, group_number_1, group_number_2)
+                            if self.check_pairwise_similarity_for_groups(group_number_1, group_number_2,):
+                                self.merge_groups(group_number_1, group_number_2)
                     else:
-                        if Grouping.get_group_number(i, groups) is not None:
-                            existing_group = groups[Grouping.get_group_number(i, groups)]
-                            existing_group_number = Grouping.get_group_number(i, groups)
+                        if self.get_group_number(i) is not None:
+                            existing_group = self.groups[self.get_group_number(i)]
+                            existing_group_number = self.get_group_number(i)
                             isolated = j
                         else:
-                            existing_group = groups[Grouping.get_group_number(j, groups)]
-                            existing_group_number = Grouping.get_group_number(j, groups)
+                            existing_group = self.groups[self.get_group_number(j)]
+                            existing_group_number = self.get_group_number(j)
                             isolated = i
-                        if Grouping.check_similarity_with_group(existing_group, isolated, pairwise_similarity, threshold):
-                            groups[existing_group_number].append(isolated)
-                            ungrouped.remove(isolated)
-        groups = Grouping.add_all_ungrouped(groups, ungrouped)
-        return groups
+                        if self.check_similarity_with_group(existing_group, isolated):
+                            self.groups[existing_group_number].append(isolated)
+                            self.ungrouped.remove(isolated)
+        self.add_all_ungrouped()
+        return self.groups
 
-
-
-    @staticmethod
-    def get_group_number(i, groups):
-        for idx, group in enumerate(groups):
+    def get_group_number(self, i):
+        for idx, group in enumerate(self.groups):
             if i in group:
                 return idx
         return None
 
-    @staticmethod
-    def check_pairwise_similarity_for_groups(groups, group_number_1, group_number_2, pairwise_similarity, threshold):
-        for x in groups[group_number_1]:
-            for y in groups[group_number_2]:
-                if x in pairwise_similarity and y in pairwise_similarity[x]:
-                    similarity = pairwise_similarity[x][y]
-                elif y in pairwise_similarity and x in pairwise_similarity[y]:
-                    similarity = pairwise_similarity[y][x]
+    def check_pairwise_similarity_for_groups(self, group_number_1, group_number_2):
+        for x in self.groups[group_number_1]:
+            for y in self.groups[group_number_2]:
+                if x in self.pairwise_similarity and y in self.pairwise_similarity[x]:
+                    similarity = self.pairwise_similarity[x][y]
+                elif y in self.pairwise_similarity and x in self.pairwise_similarity[y]:
+                    similarity = self.pairwise_similarity[y][x]
 
-                if similarity < threshold:
+                if similarity < self.threshold:
                     return False
         return True;
 
-    @staticmethod
-    def check_similarity_with_group(existing_group, isolated, pairwise_similarity, threshold):
+    def check_similarity_with_group(self, existing_group, isolated):
         for i in existing_group:
-            if i in pairwise_similarity and isolated in pairwise_similarity[i]:
-                similarity = pairwise_similarity[i][isolated]
-            elif isolated in pairwise_similarity and i in pairwise_similarity[isolated]:
-                similarity = pairwise_similarity[isolated][i]
-            if similarity < threshold:
+            if i in self.pairwise_similarity and isolated in self.pairwise_similarity[i]:
+                similarity = self.pairwise_similarity[i][isolated]
+            elif isolated in self.pairwise_similarity and i in self.pairwise_similarity[isolated]:
+                similarity = self.pairwise_similarity[isolated][i]
+            if similarity < self.threshold:
                 return False
         return True;
 
-    @staticmethod
-    def merge_groups(groups, group_number_1, group_number_2):
-        groups[group_number_1] = groups[group_number_1]+groups[group_number_2]
-        groups.remove(groups[group_number_2])
-        return groups
+    def merge_groups(self, group_number_1, group_number_2):
+        self.groups[group_number_1] = self.groups[group_number_1] + self.groups[group_number_2]
+        self.groups.remove(self.groups[group_number_2])
 
-    @staticmethod
-    def add_all_ungrouped(groups, ungrouped):
-        for obj in ungrouped:
-            groups.append([obj])
-        return groups
+    def add_all_ungrouped(self):
+        for obj in self.ungrouped:
+            self.groups.append([obj])
 
-
-    @staticmethod
-    def initialize_ungrouped(pairwise_similarity):
-        ungrouped = set([])
-        for i in pairwise_similarity:
-            ungrouped.add(i)
-            for j in pairwise_similarity[i]:
-                ungrouped.add(j)
-        return ungrouped
+    def initialize_ungrouped(self):
+        for i in self.pairwise_similarity:
+            self.ungrouped.add(i)
+            for j in self.pairwise_similarity[i]:
+                self.ungrouped.add(j)
